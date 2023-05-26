@@ -66,7 +66,7 @@ db = config['psql']['db']
 user = config['psql']['user']
 password = config['psql']['password']
 
-DSN = f'postgresql://{user}:{password}@localhost:5432/{db}'
+DSN = ('postgresql://%s:%s@localhost:5432/%s', (user, password, db))
 engine = sqlalchemy.create_engine(DSN)
 create_tables(engine)
 
