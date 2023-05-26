@@ -24,7 +24,7 @@ if __name__ == '__main__':
             print(data)
             for elem in data:
                 for key, value in elem.items():
-                    if value == 'model':
+                    if key == 'model':
                         table_name = value
                     elif key == 'pk':
                         pk = value
