@@ -46,8 +46,8 @@ class Sale(Base):
     __tablename__ = 'sale'
 
     id = sq.Column(sq.Integer, primary_key=True)
-    price = sq.Column(sq.Integer, nullable=False)
-    date_sale = sq.Column(sq.Date(), nullable=False)
+    price = sq.Column(sq.Float, nullable=False)
+    date_sale = sq.Column(sq.DateTime(), nullable=False)
     __table_args__ = (sq.CheckConstraint('date_sale <= CURRENT_DATE'),)
     id_stock = sq.Column(sq.ForeignKey('stock.id'), nullable=False)
     count = sq.Column(sq.Integer, default=1)
@@ -66,7 +66,7 @@ db = config['psql']['db']
 user = config['psql']['user']
 password = config['psql']['password']
 
-DSN = ('postgresql://%s:%s@localhost:5432/%s', (user, password, db))
+DSN = f'postgresql://{user}:{password}@localhost:5432/{db}'
 engine = sqlalchemy.create_engine(DSN)
 create_tables(engine)
 
