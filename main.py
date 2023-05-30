@@ -1,50 +1,64 @@
-import json
-from psycopg2 import Error
+from database import load_data_from_file
+from utils import delete_objects
 from objects import Publisher, Book, Stock, Shop, Sale, session
 
-if __name__ == '__main__':
 
-    # удаление объектов
-    # session.query(Sale).filter(Sale.id > 0).delete()
-    # session.query(Stock).filter(Stock.id > 0).delete()
-    # session.query(Shop).filter(Shop.id > 0).delete()
-    # session.query(Book).filter(Book.id > 0).delete()
-    # session.query(Publisher).filter(Publisher.id > 0).delete()
-    # session.commit()  # фиксируем изменения
+class InputHandler:
+    def __init__(self):
+        self.publisher_id = None
 
-    # task 2
-    id_publisher = 'Неизвестный id'
-    publisher = input('Введите имя или id издателя: ')
-    if publisher.isdigit():
-        id_publisher = int(publisher)
+    def get_publisher_id(self):
+        while True:
+            publisher = input('Введите имя или id издателя: ')
+            if publisher.isdigit():
+                self.publisher_id = int(publisher)
+                break
+            else:
+                query = session.query(Publisher).filter(Publisher.name.ilike(f'%{publisher}%'))
+                if query.count() == 0:
+                    print(f'Издатель {publisher} не найден в базе данных')
+                elif query.count() == 1:
+                    self.publisher_id = query.first().id
+                    break
+                else:
+                    print(f'Найдено несколько издателей с именем {publisher}. Выберите нужный id из списка:')
+                    publisher_list_id = []
+                    for elem in query.all():
+                        publisher_list_id.append(elem.id)
+                        print(f'{elem.id}: {elem.name}')
+                    while self.publisher_id not in publisher_list_id:
+                        self.publisher_id = input('Введите id издателя: ')
+                        if self.publisher_id == 'exit':
+                            print('Вы закрыли сессию. Всего доброго!')
+                            return
+                        elif not self.publisher_id.isdigit() or int(self.publisher_id) not in publisher_list_id:
+                            print('Некорректный id издателя')
+                        elif int(self.publisher_id) in publisher_list_id:
+                            return int(self.publisher_id)
+        return int(self.publisher_id)
+
+
+def main():
+    input_handler = InputHandler()
+    publisher_id = input_handler.get_publisher_id()
+
+    q = session.query(Book.title, Shop.name, Sale.price, Sale.date_sale). \
+        join(Publisher, Publisher.id == Book.id_publisher). \
+        join(Stock, Stock.id_book == Book.id). \
+        join(Shop, Shop.id == Stock.id_shop). \
+        join(Sale, Sale.id_stock == Stock.id). \
+        filter(Publisher.id == publisher_id)
+
+    if q.all():
+        print('Акты продаж:')
+        for s in q:
+            print(*s, sep=' | ')
     else:
-        for elem in session.query(Publisher).filter(Publisher.name.ilike(f'%{publisher}%')).all():
-            id_publisher = elem.id
+        print('Нет совпадений.')
 
-    q = session.query(Book.title, Shop.name, Sale.price, Sale.date_sale).\
-    join(Publisher, Publisher.id == Book.id_publisher).\
-    join(Stock, Stock.id_book == Book.id).\
-    join(Shop, Shop.id == Stock.id_shop).\
-    join(Sale, Sale.id_stock == Stock.id).\
-    filter(Publisher.id == id_publisher)
 
-    for s in q.all():
-        print(*s, sep=' | ')
+if __name__ == '__main__':
+    # delete_objects()
+    # load_data_from_file('tests_data.json')  # наполнение БД из указанного json-файла
+    main()
 
-    # task 3
-    # try:
-    #     with open('tests_data.json', 'r') as f:
-    #         data = json.load(f)
-    #
-    #     for elem in data:
-    #         model = {
-    #             'publisher': Publisher,
-    #             'shop': Shop,
-    #             'book': Book,
-    #             'stock': Stock,
-    #             'sale': Sale,
-    #         }[elem.get('model')]
-    #         session.add(model(id=elem.get('pk'), **elem.get('fields')))
-    #     session.commit()
-    # except(Exception, Error) as error:
-    #     print('Непредвиденная ошибка.', error)
