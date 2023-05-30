@@ -3,10 +3,10 @@ from psycopg2 import Error
 from objects import Publisher, Book, Stock, Shop, Sale, session
 
 
-def load_data_from_file(file: str):
+def load_data_from_file():
     # task 3
     try:
-        with open(file, 'r') as f:
+        with open('tests_data.json', 'r') as f:
             data = json.load(f)
 
         for elem in data:

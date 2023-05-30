@@ -54,11 +54,11 @@ def main():
         for s in q:
             print(*s, sep=' | ')
     else:
-        print('Нет совпадений.')
+        print('Нет совпадений в базе данных.')
 
 
 if __name__ == '__main__':
     # delete_objects()
-    # load_data_from_file('tests_data.json')  # наполнение БД из указанного json-файла
+    # load_data_from_file()
     main()
 
