@@ -1,7 +1,5 @@
-import configparser
-import sqlalchemy
 import sqlalchemy as sq
-from sqlalchemy.orm import declarative_base, relationship, sessionmaker
+from sqlalchemy.orm import declarative_base, relationship
 
 Base = declarative_base()
 
@@ -55,11 +53,11 @@ class Sale(Base):
     stock = relationship(Stock, backref='sales')
 
 
-class InputHandler:
+class InputHandler():
     def __init__(self):
         self.publisher_id = None
 
-    def get_publisher_id(self):
+    def get_publisher_id(self, session):
         while True:
             publisher = input('Введите имя или id издателя: ')
             if publisher.isdigit():
@@ -88,22 +86,3 @@ class InputHandler:
                         elif int(self.publisher_id) in publisher_list_id:
                             return int(self.publisher_id)
         return int(self.publisher_id)
-
-
-def create_tables(engine):
-    # Base.metadata.drop_all(engine)
-    Base.metadata.create_all(engine)
-
-
-config = configparser.ConfigParser()
-config.read('config.ini')
-db = config['psql']['db']
-user = config['psql']['user']
-password = config['psql']['password']
-
-DSN = f'postgresql://{user}:{password}@localhost:5432/{db}'
-engine = sqlalchemy.create_engine(DSN)
-create_tables(engine)
-
-Session = sessionmaker(bind=engine)
-session = Session()

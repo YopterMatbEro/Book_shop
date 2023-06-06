@@ -1,9 +1,9 @@
 import json
 from psycopg2 import Error
-from objects import Publisher, Book, Stock, Shop, Sale, session
+from objects import Publisher, Book, Stock, Shop, Sale
 
 
-def load_data_from_file():
+def load_data_from_file(session):
     # task 3
     try:
         with open('tests_data.json', 'r') as f:
